@@ -57,11 +57,12 @@ module.exports = function (repo) {
     //   });
     // } else {
       this._ensureQueue(id);
-      this._queues[id].push(this._get.bind(this, id, cb), function noop () {});
+      this._queues[id].push(this._get.bind(this, id, cb), function noop () {  });
     // }
   };
 
   copy.lock = function (entity) {
+    this._ensureQueue(entity.id);
     this._locks[entity.id].lock();
   };
 
@@ -79,7 +80,7 @@ module.exports = function (repo) {
   copy.commit = function (entity, cb) {
     var self = this;
     this._ensureQueue(entity.id);
-    copy._commit.call(this, entity, function (err) {
+    this._commit.call(this, entity, function (err) {
       if (err) return cb(err);
       self._locks[entity.id].unlock();
       cb();
@@ -99,6 +100,7 @@ module.exports = function (repo) {
   // };
 
   copy.unlock = function (entity) {
+    this._ensureQueue(entity.id);
     this._locks[entity.id].unlock();
   };
 
