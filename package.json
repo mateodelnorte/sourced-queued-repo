@@ -1,6 +1,6 @@
 {
   "name": "sourced-queued-repo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "add concurrency queuing + locking to sourced repositories",
   "main": "index.js",
   "scripts": {
