@@ -1,4 +1,3 @@
-var clone = require('clone');
 var EventEmitter = require('events').EventEmitter;
 // var parallel = require('fastparallel');
 var queue = require('fastq');
@@ -57,7 +56,12 @@ module.exports = function (repo) {
     //   });
     // } else {
       this._ensureQueue(id);
-      this._queues[id].push(this._get.bind(this, id, cb), function noop () {  });
+
+      var fn = process.domain ?
+                process.domain.bind(this._get.bind(this, id, cb)) :
+                this._get.bind(this, id, cb);
+
+      this._queues[id].push(fn, function noop () {  });
     // }
   };
 
