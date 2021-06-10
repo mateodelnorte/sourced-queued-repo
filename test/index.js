@@ -19,6 +19,10 @@ describe('sourced-queue-repo', function () {
     sourcedRepoMongo.connect('mongodb://localhost:27017/sourced-queue-repo');
   });
 
+  after(function (done) {
+    sourcedRepoMongo.close(done)
+  })
+
   it('should not allow committing an entity when entity is locked', function (done) {
 
     /* test entity */
