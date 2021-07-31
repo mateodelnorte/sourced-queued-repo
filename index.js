@@ -1,5 +1,4 @@
 const { EventEmitter } = require('events')
-// var parallel = require('fastparallel');
 const queue = require('fastq')
 const util = require('util')
 
@@ -42,17 +41,9 @@ module.exports = function (repo) {
   }
 
   copy._commit = copy.commit
-  // copy._commitAll = copy.commitAll;
   copy._get = copy.get
-  // copy._getAll = copy.getAll;
 
   copy.get = function (id, cb) {
-    // if (id instanceof Array) {
-    //   var ids = id;
-    //   ids.forEach(function (id) {
-    //     self._ensureQueue(id);
-    //   });
-    // } else {
     this._ensureQueue(id)
 
     const fn = process.domain
@@ -60,24 +51,12 @@ module.exports = function (repo) {
       : this._get.bind(this, id, cb)
 
     this._queues[id].push(fn, () => { })
-    // }
   }
 
   copy.lock = function (entity) {
     this._ensureQueue(entity.id)
     this._locks[entity.id].lock()
   }
-
-  // // copy.getAll = function (ids, cb) {
-  //   if (typeof ids === 'function') {
-  //     cb = ids;
-  //     ids = null;
-  //   }
-  //   var self = this;
-  //   if (ids) ids.forEach(function (id) { self._ensureQueue(id); });
-  //   parallel()
-  //   self._queues[id].push({ id: ids, cb: cb });
-  // };
 
   copy.commit = function (entity, cb) {
     const self = this
@@ -88,18 +67,6 @@ module.exports = function (repo) {
       cb()
     })
   }
-
-  // copy.commitAll = function (entities, cb) {
-  //   var self = this;
-  //   entities.forEach(function (entity) { self._ensureQueue(entity.id); });
-  //   copy._commitAll.call(this, entities, function (err) {
-  //     if (err) return cb(err);
-  //     _.forEach(entities, function (entity) {
-  //       self._locks[entity.id].unlock();
-  //     });
-  //     cb();
-  //   });
-  // };
 
   copy.unlock = function (entity) {
     this._ensureQueue(entity.id)
