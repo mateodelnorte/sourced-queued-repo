@@ -1,10 +1,11 @@
 {
   "name": "sourced-queued-repo",
-  "version": "1.0.3",
+  "version": "0.0.0-development",
   "description": "add concurrency queuing + locking to sourced repositories",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "semantic-release": "semantic-release"
   },
   "author": "mattwalters5@gmail.com",
   "license": "ISC",
@@ -12,9 +13,15 @@
     "fastq": "^1.3.0"
   },
   "devDependencies": {
+    "codecov": "^3.8.2",
     "mocha": "^2.3.4",
     "should": "^8.0.2",
     "sourced": "0.0.16",
-    "sourced-repo-mongo": "^0.3.7"
+    "sourced-repo-mongo": "^0.3.7",
+    "semantic-release": "^17.4.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mateodelnorte/sourced-queued-repo.git"
   }
 }
