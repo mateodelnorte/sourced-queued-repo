@@ -1,171 +1,157 @@
-var domain = require('domain');
-var Entity = require('sourced').Entity;
-var events = require('events');
-var MongoRepository = require('sourced-repo-mongo').Repository;
-var Queued = require('../');
-var should = require('should');
-var sourcedRepoMongo = require('sourced-repo-mongo/mongo');
-var util = require('util');
-var _ = require('lodash');
+const domain = require('domain')
+const { Entity } = require('sourced')
 
-describe('sourced-queue-repo', function () {
+const MongoRepository = require('sourced-repo-mongo').Repository
 
-  before(function (done) {
-    sourcedRepoMongo.on('connected', function (db) {
-      db.collection('Test.events').remove({}, function () {
-        done();
-      });
-    });
-    sourcedRepoMongo.connect('mongodb://localhost:27017/sourced-queue-repo');
-  });
+const sourcedRepoMongo = require('sourced-repo-mongo/mongo')
+const util = require('util')
 
-  after(function (done) {
+const Queued = require('..')
+
+describe('sourced-queue-repo', () => {
+  before((done) => {
+    sourcedRepoMongo.on('connected', (db) => {
+      db.collection('Test.events').remove({}, () => {
+        done()
+      })
+    })
+    sourcedRepoMongo.connect('mongodb://localhost:27017/sourced-queue-repo')
+  })
+
+  after((done) => {
     sourcedRepoMongo.close(done)
   })
 
   it('should not allow committing an entity when entity is locked', function (done) {
-
     /* test entity */
 
-    this.timeout(5000);
+    this.timeout(5000)
 
-    var completed = false, test2;
+    let completed = false; let test2
 
-    setTimeout(function ensureNotCompleted () {
-      completed.should.eql(false);
-      repo.commit(test2, function (err) {
-        if (err) return done(err);
-        setTimeout(function () {
-          completed.should.eql(true);
-          done();
-        }, 1000);
-      });
-    }, 1000);
+    setTimeout(() => {
+      completed.should.eql(false)
+      repo.commit(test2, (err) => {
+        if (err) return done(err)
+        setTimeout(() => {
+          completed.should.eql(true)
+          done()
+        }, 1000)
+      })
+    }, 1000)
 
     function Test () {
-      this.id = 'test';
-      this.gone = false;
-      Entity.apply(this, arguments);
+      this.id = 'test'
+      this.gone = false
+      Entity.apply(this, arguments)
     }
 
     Entity.digestMethod(Test, function go () {
-      this.gone = true;
-    });
+      this.gone = true
+    })
 
-    util.inherits(Test, Entity);
+    util.inherits(Test, Entity)
 
     /* test repo */
 
     function TestRepository () {
-      MongoRepository.call(this, Test);
+      MongoRepository.call(this, Test)
     }
 
-    util.inherits(TestRepository, MongoRepository);
+    util.inherits(TestRepository, MongoRepository)
     /* sut */
 
-    var repo = Queued(new TestRepository());
+    const repo = Queued(new TestRepository())
 
-    var test = new Test();
+    const test = new Test()
 
-    test.go({});
+    test.go({})
 
-    repo.commit(test, function () {
+    repo.commit(test, () => {
+      repo.get(test.id, (err, test) => {
+        if (err) return done(err)
 
-      repo.get(test.id, function (err, test) {
-        if (err) return done(err);
+        test2 = test
 
-        test2 = test;
+        test2.go({})
 
-        test2.go({});
+        repo.get(test.id, (err, test3) => {
+          if (err) return done(err)
 
-        repo.get(test.id, function (err, test3) {
-          if (err) return done(err);
-
-          completed = true;
-
-        });
-
-      });
-
-    });
-
-  });
+          completed = true
+        })
+      })
+    })
+  })
 
   it('shoudl have access to same domain after async operation', function (done) {
-
     /* test entity */
 
-    var rando = Math.random();
+    const rando = Math.random()
 
-    var d = domain.create();
+    const d = domain.create()
 
-    d.rando = rando;
+    d.rando = rando
 
-    this.timeout(5000);
+    this.timeout(5000)
 
-    var completed = false, test2;
+    let completed = false; let test2
 
-    setTimeout(function ensureNotCompleted () {
-      completed.should.eql(false);
-      repo.commit(test2, function (err) {
-        if (err) return done(err);
-        setTimeout(function () {
-          completed.should.eql(true);
-          process.domain.should.have.property('rando', rando);
-          done();
-        }, 1000);
-      });
-    }, 1000);
+    setTimeout(() => {
+      completed.should.eql(false)
+      repo.commit(test2, (err) => {
+        if (err) return done(err)
+        setTimeout(() => {
+          completed.should.eql(true)
+          process.domain.should.have.property('rando', rando)
+          done()
+        }, 1000)
+      })
+    }, 1000)
 
     function Test () {
-      this.id = 'test';
-      this.gone = false;
-      Entity.apply(this, arguments);
+      this.id = 'test'
+      this.gone = false
+      Entity.apply(this, arguments)
     }
 
     Entity.digestMethod(Test, function go () {
-      this.gone = true;
-    });
+      this.gone = true
+    })
 
-    util.inherits(Test, Entity);
+    util.inherits(Test, Entity)
 
     /* test repo */
 
     function TestRepository () {
-      MongoRepository.call(this, Test);
+      MongoRepository.call(this, Test)
     }
 
-    util.inherits(TestRepository, MongoRepository);
+    util.inherits(TestRepository, MongoRepository)
     /* sut */
 
-    var repo = Queued(new TestRepository());
+    const repo = Queued(new TestRepository())
 
-    var test = new Test();
+    const test = new Test()
 
-    test.go({});
+    test.go({})
 
-    d.enter();
+    d.enter()
 
-    repo.commit(test, function () {
+    repo.commit(test, () => {
+      repo.get(test.id, (err, test) => {
+        if (err) return done(err)
 
-      repo.get(test.id, function (err, test) {
-        if (err) return done(err);
+        test2 = test
 
-        test2 = test;
+        test2.go({})
 
-        test2.go({});
+        repo.get(test.id, (err, test3) => {
+          if (err) return done(err)
 
-        repo.get(test.id, function (err, test3) {
-          if (err) return done(err);
-
-          completed = true;
-
-        });
-
-      });
-
-    });
-
-  });
-
-});
+          completed = true
+        })
+      })
+    })
+  })
+})
