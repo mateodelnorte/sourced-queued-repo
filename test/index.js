@@ -1,8 +1,7 @@
 const domain = require('domain')
 const { Entity } = require('sourced')
-
+const should = require('should') // eslint-disable-line no-unused-vars
 const MongoRepository = require('sourced-repo-mongo').Repository
-
 const sourcedRepoMongo = require('sourced-repo-mongo/mongo')
 const util = require('util')
 
