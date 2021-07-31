@@ -1,51 +1,49 @@
-var EventEmitter = require('events').EventEmitter;
+const { EventEmitter } = require('events')
 // var parallel = require('fastparallel');
-var queue = require('fastq');
-var util = require('util');
+const queue = require('fastq')
+const util = require('util')
 
 function Lock () {
-  this.locked = false;
-  EventEmitter.call(this);
+  this.locked = false
+  EventEmitter.call(this)
 }
 
-util.inherits(Lock, EventEmitter);
+util.inherits(Lock, EventEmitter)
 
 Lock.prototype.unlock = function unlock () {
-  if (this.locked === false) return;
-  this.locked = false;
-  this.emit('unlocked');
-};
+  if (this.locked === false) return
+  this.locked = false
+  this.emit('unlocked')
+}
 
 Lock.prototype.lock = function lock () {
-  if (this.locked === true) return;
-  this.locked = true;
-  this.emit('locked');
-};
+  if (this.locked === true) return
+  this.locked = true
+  this.emit('locked')
+}
 
 module.exports = function (repo) {
+  const copy = Object.create(repo)
 
-  var copy = Object.create(repo);
-
-  copy._locks = {};
-  copy._queues = {};
+  copy._locks = {}
+  copy._queues = {}
 
   copy._ensureQueue = function (id) {
-    var self = this;
-    if ( ! this._queues[id]) {
-      var lock = this._locks[id] = new Lock();
-      this._queues[id] = queue(function (task, next) {
-        lock.once('unlocked', function () {
-          next();
-        });
-        lock.lock();
-        task();
-      }, 1);
+    if (!this._queues[id]) {
+      const lock = this._locks[id] = new Lock()
+      this._queues[id] = queue((task, next) => {
+        lock.once('unlocked', () => {
+          next()
+        })
+        lock.lock()
+        task()
+      }, 1)
     }
-  };
+  }
 
-  copy._commit = copy.commit;
+  copy._commit = copy.commit
   // copy._commitAll = copy.commitAll;
-  copy._get = copy.get;
+  copy._get = copy.get
   // copy._getAll = copy.getAll;
 
   copy.get = function (id, cb) {
@@ -55,20 +53,20 @@ module.exports = function (repo) {
     //     self._ensureQueue(id);
     //   });
     // } else {
-      this._ensureQueue(id);
+    this._ensureQueue(id)
 
-      var fn = process.domain ?
-                process.domain.bind(this._get.bind(this, id, cb)) :
-                this._get.bind(this, id, cb);
+    const fn = process.domain
+      ? process.domain.bind(this._get.bind(this, id, cb))
+      : this._get.bind(this, id, cb)
 
-      this._queues[id].push(fn, function noop () {  });
+    this._queues[id].push(fn, () => { })
     // }
-  };
+  }
 
   copy.lock = function (entity) {
-    this._ensureQueue(entity.id);
-    this._locks[entity.id].lock();
-  };
+    this._ensureQueue(entity.id)
+    this._locks[entity.id].lock()
+  }
 
   // // copy.getAll = function (ids, cb) {
   //   if (typeof ids === 'function') {
@@ -82,14 +80,14 @@ module.exports = function (repo) {
   // };
 
   copy.commit = function (entity, cb) {
-    var self = this;
-    this._ensureQueue(entity.id);
-    this._commit.call(this, entity, function (err) {
-      if (err) return cb(err);
-      self._locks[entity.id].unlock();
-      cb();
-    });
-  };
+    const self = this
+    this._ensureQueue(entity.id)
+    this._commit(entity, (err) => {
+      if (err) return cb(err)
+      self._locks[entity.id].unlock()
+      cb()
+    })
+  }
 
   // copy.commitAll = function (entities, cb) {
   //   var self = this;
@@ -104,10 +102,9 @@ module.exports = function (repo) {
   // };
 
   copy.unlock = function (entity) {
-    this._ensureQueue(entity.id);
-    this._locks[entity.id].unlock();
-  };
+    this._ensureQueue(entity.id)
+    this._locks[entity.id].unlock()
+  }
 
-  return copy;
-
-};
+  return copy
+}
