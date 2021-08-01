@@ -1,24 +1,24 @@
 const { EventEmitter } = require('events')
 const queue = require('fastq')
-const util = require('util')
 
-function Lock () {
-  this.locked = false
-  EventEmitter.call(this)
-}
+class Lock extends EventEmitter {
+  constructor() {
+    super()
 
-util.inherits(Lock, EventEmitter)
+    this.locked = false
+  }
 
-Lock.prototype.unlock = function unlock () {
-  if (this.locked === false) return
-  this.locked = false
-  this.emit('unlocked')
-}
+  lock () {
+    if (this.locked === true) return
+    this.locked = true
+    this.emit('locked')
+  }
 
-Lock.prototype.lock = function lock () {
-  if (this.locked === true) return
-  this.locked = true
-  this.emit('locked')
+  unlock () {
+    if (this.locked === false) return
+    this.locked = false
+    this.emit('unlocked')
+  }
 }
 
 module.exports = function (repo) {
